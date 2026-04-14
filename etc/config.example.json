@@ -1,0 +1,13 @@
+{
+  "godaddy_base_url": "https://api.godaddy.com",
+  "godaddy_api_key": "YOUR_GODADDY_API_KEY",
+  "godaddy_api_secret": "YOUR_GODADDY_API_SECRET",
+  "domain": "example.com",
+  "host": "@",
+  "cache_path": "dns-cache.json",
+  "ipv4_url": "https://api.ipify.org",
+  "ipv6_url": "https://api64.ipify.org",
+  "enable_ipv4": true,
+  "enable_ipv6": false,
+  "dry_run": true
+}

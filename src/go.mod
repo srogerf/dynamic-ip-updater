@@ -1,0 +1,3 @@
+module dynamic-ip-updater
+
+go 1.22.2
