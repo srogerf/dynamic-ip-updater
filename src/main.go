@@ -95,6 +95,8 @@ func processRecord(ctx context.Context, ipClient *IPLookupClient, goDaddy *GoDad
 	cachedIP := getCachedRecord(*cache, cfg.Domain, cfg.Host, spec.recordType)
 	if cachedIP != "" {
 		log.Printf("Cached %s DNS address: %s", spec.recordType, cachedIP)
+		// The cache stores the last confirmed DNS value so unchanged public IPs can
+		// skip a GoDaddy read on repeat runs.
 		if cachedIP == currentIP {
 			log.Printf("Cached %s record matches current %s address, skipping DNS lookup", spec.recordType, spec.family)
 			return nil

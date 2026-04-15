@@ -55,6 +55,8 @@ func (c *IPLookupClient) Lookup(ctx context.Context, family, url string) (string
 			return "", fmt.Errorf("%s lookup returned non-IPv4 value %q", family, value)
 		}
 	case "ipv6":
+		// Some public lookup services return IPv4 when the current network has no
+		// public IPv6 route. Treat that as a skipped IPv6 path, not a fatal update bug.
 		if ip.To4() != nil {
 			return "", fmt.Errorf("%w: lookup service returned IPv4 value %q instead", ErrNoPublicIPv6, value)
 		}

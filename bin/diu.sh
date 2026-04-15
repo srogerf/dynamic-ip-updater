@@ -15,6 +15,8 @@ for arg in "${ARGS[@]}"; do
 done
 
 if [[ "${has_config_flag}" == false ]]; then
+  # go run uses a temporary executable path, so pass the real repo config
+  # explicitly unless the caller already selected a config file.
   ARGS=("--config-file" "${DEFAULT_CONFIG}" "${ARGS[@]}")
 fi
 

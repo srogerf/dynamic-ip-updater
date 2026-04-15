@@ -260,9 +260,12 @@ func finalizeConfigPaths(cfg Config, cli CLIOptions) (Config, error) {
 		return Config{}, err
 	}
 
+	// Default paths are resolved from the executable location so the built binary
+	// can find ../etc/config.json and ../etc/dns-cache.json when launched from bin.
 	configPath := resolvePath(exeDir, cli.ConfigPath)
 	configDir := filepath.Dir(configPath)
 
+	// A custom cache path in the config file is resolved relative to that config file.
 	if cfg.CachePath == defaultCachePath || cfg.CachePath == "" {
 		cfg.CachePath = resolvePath(exeDir, cfg.CachePath)
 	} else {
