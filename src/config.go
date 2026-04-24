@@ -25,6 +25,7 @@ type Config struct {
 	Domain         string `json:"domain"`
 	Host           string `json:"host"`
 	CachePath      string `json:"cache_path"`
+	EnableCache    bool   `json:"enable_cache"`
 	IPv4URL        string `json:"ipv4_url"`
 	IPv6URL        string `json:"ipv6_url"`
 	EnableIPv4     bool   `json:"enable_ipv4"`
@@ -40,6 +41,7 @@ type CLIOptions struct {
 	Domain     string
 	Host       string
 	CachePath  string
+	EnableCache bool
 	IPv4URL    string
 	IPv6URL    string
 	DryRun     bool
@@ -98,6 +100,7 @@ func parseCLI(args []string) (CLIOptions, error) {
 	var domain stringFlag
 	var host stringFlag
 	var cachePath stringFlag
+	var enableCache boolFlag
 	var ipv4URL stringFlag
 	var ipv6URL stringFlag
 	var dryRun boolFlag
@@ -112,6 +115,7 @@ func parseCLI(args []string) (CLIOptions, error) {
 	fs.Var(&domain, "domain", "domain to update")
 	fs.Var(&host, "host", "host record to update")
 	fs.Var(&cachePath, "cache", "path to the DNS cache file")
+	fs.Var(&enableCache, "enable-cache", "enable the local DNS cache optimization")
 	fs.Var(&ipv4URL, "ipv4-url", "public IPv4 lookup URL")
 	fs.Var(&ipv6URL, "ipv6-url", "public IPv6 lookup URL")
 	fs.Var(&dryRun, "dry-run", "log intended changes without updating GoDaddy")
@@ -134,6 +138,7 @@ func parseCLI(args []string) (CLIOptions, error) {
 		Domain:     domain.value,
 		Host:       host.value,
 		CachePath:  cachePath.value,
+		EnableCache: enableCache.value,
 		IPv4URL:    ipv4URL.value,
 		IPv6URL:    ipv6URL.value,
 		DryRun:     dryRun.value,
@@ -201,6 +206,7 @@ func mergeConfig(fileCfg Config, cli CLIOptions) Config {
 	if fileCfg.CachePath != "" {
 		cfg.CachePath = fileCfg.CachePath
 	}
+	cfg.EnableCache = fileCfg.EnableCache
 	if fileCfg.IPv4URL != "" {
 		cfg.IPv4URL = fileCfg.IPv4URL
 	}
@@ -228,6 +234,9 @@ func mergeConfig(fileCfg Config, cli CLIOptions) Config {
 	}
 	if cli.CachePath != "" {
 		cfg.CachePath = cli.CachePath
+	}
+	if cli.EnableCache {
+		cfg.EnableCache = true
 	}
 	if cli.IPv4URL != "" {
 		cfg.IPv4URL = cli.IPv4URL

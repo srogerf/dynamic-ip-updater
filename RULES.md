@@ -18,7 +18,8 @@ This file captures the agreed rules for the dynamic IP updater before implementa
 
 - The updater should target the DNS record configured by `domain`, `host`, and record type.
 - The root domain should be represented as `@` in configuration.
-- A DNS update should be skipped when the current public IP already matches the cached confirmed DNS value for the same record type.
+- Cache use must be optional and disabled by default.
+- When cache is enabled, a DNS update should be skipped when the current public IP already matches the cached confirmed DNS value for the same record type.
 
 ### GoDaddy Auth And Config
 

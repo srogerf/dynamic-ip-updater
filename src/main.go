@@ -43,9 +43,12 @@ func run(args []string) error {
 		return err
 	}
 
-	cache, err := loadCache(cfg.CachePath)
-	if err != nil {
-		return err
+	cache := DNSCache{Records: map[string]string{}}
+	if cfg.EnableCache {
+		cache, err = loadCache(cfg.CachePath)
+		if err != nil {
+			return err
+		}
 	}
 
 	ctx := context.Background()
@@ -75,7 +78,11 @@ func run(args []string) error {
 		}
 	}
 
-	return saveCache(cfg.CachePath, cache)
+	if cfg.EnableCache {
+		return saveCache(cfg.CachePath, cache)
+	}
+
+	return nil
 }
 
 type recordSpec struct {
@@ -92,14 +99,16 @@ func processRecord(ctx context.Context, ipClient *IPLookupClient, goDaddy *GoDad
 	}
 	log.Printf("Current %s address: %s", spec.family, currentIP)
 
-	cachedIP := getCachedRecord(*cache, cfg.Domain, cfg.Host, spec.recordType)
-	if cachedIP != "" {
-		log.Printf("Cached %s DNS address: %s", spec.recordType, cachedIP)
-		// The cache stores the last confirmed DNS value so unchanged public IPs can
-		// skip a GoDaddy read on repeat runs.
-		if cachedIP == currentIP {
-			log.Printf("Cached %s record matches current %s address, skipping DNS lookup", spec.recordType, spec.family)
-			return nil
+	if cfg.EnableCache {
+		cachedIP := getCachedRecord(*cache, cfg.Domain, cfg.Host, spec.recordType)
+		if cachedIP != "" {
+			log.Printf("Cached %s DNS address: %s", spec.recordType, cachedIP)
+			// The cache stores the last confirmed DNS value so unchanged public IPs can
+			// skip a GoDaddy read on repeat runs.
+			if cachedIP == currentIP {
+				log.Printf("Cached %s record matches current %s address, skipping DNS lookup", spec.recordType, spec.family)
+				return nil
+			}
 		}
 	}
 
@@ -109,11 +118,15 @@ func processRecord(ctx context.Context, ipClient *IPLookupClient, goDaddy *GoDad
 		return err
 	}
 	log.Printf("Configured %s DNS address: %s", spec.recordType, configuredIP)
-	setCachedRecord(cache, cfg.Domain, cfg.Host, spec.recordType, configuredIP)
+	if cfg.EnableCache {
+		setCachedRecord(cache, cfg.Domain, cfg.Host, spec.recordType, configuredIP)
+	}
 
 	if configuredIP == currentIP {
 		log.Printf("No %s update needed", spec.recordType)
-		setCachedRecord(cache, cfg.Domain, cfg.Host, spec.recordType, currentIP)
+		if cfg.EnableCache {
+			setCachedRecord(cache, cfg.Domain, cfg.Host, spec.recordType, currentIP)
+		}
 		return nil
 	}
 
@@ -127,7 +140,9 @@ func processRecord(ctx context.Context, ipClient *IPLookupClient, goDaddy *GoDad
 		return err
 	}
 	log.Printf("Updated %s record for %s/%s", spec.recordType, cfg.Domain, cfg.Host)
-	setCachedRecord(cache, cfg.Domain, cfg.Host, spec.recordType, currentIP)
+	if cfg.EnableCache {
+		setCachedRecord(cache, cfg.Domain, cfg.Host, spec.recordType, currentIP)
+	}
 
 	return nil
 }

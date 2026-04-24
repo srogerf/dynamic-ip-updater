@@ -11,7 +11,7 @@ It currently supports:
 - dry-run mode
 - JSON config files
 - command-line overrides with strict precedence
-- a local DNS cache to avoid unnecessary DNS lookups
+- an optional local DNS cache to avoid unnecessary DNS lookups
 
 ## Project Layout
 
@@ -25,8 +25,8 @@ For each enabled record type, the updater:
 
 1. Looks up the current public IP from a configured HTTPS endpoint.
 2. Validates that the returned value matches the requested IP family.
-3. Checks the local cache in `etc/dns-cache.json`.
-4. Skips the GoDaddy DNS lookup if the cached value already matches the current public IP.
+3. If cache is enabled, checks the local cache in `etc/dns-cache.json`.
+4. If cache is enabled and the cached value already matches the current public IP, skips the GoDaddy DNS lookup.
 5. Otherwise reads the current DNS record from GoDaddy.
 6. Updates the DNS record only when the current public IP and configured DNS value are different.
 
@@ -84,6 +84,7 @@ Example:
   "domain": "example.com",
   "host": "@",
   "cache_path": "dns-cache.json",
+  "enable_cache": false,
   "ipv4_url": "https://api.ipify.org",
   "ipv6_url": "https://api64.ipify.org",
   "enable_ipv4": true,
@@ -97,6 +98,7 @@ Notes:
 - Use `@` for the root domain record.
 - `host: "@"` means the apex record for `example.com`.
 - `cache_path` can be relative to the config file location.
+- `enable_cache` defaults to `false`. The cache is only used when explicitly enabled.
 - `ipv6_url` may return IPv4 when the network has no public IPv6. The program detects that and skips the IPv6 update safely.
 
 ## Configuration Precedence
@@ -152,6 +154,9 @@ Available flags:
 
 - `--cache`
   Path to the local DNS cache file.
+
+- `--enable-cache`
+  Enable the local DNS cache optimization. Disabled by default.
 
 - `--ipv4-url`
   HTTPS endpoint used to look up the current public IPv4 address. Defaults to `https://api.ipify.org`.

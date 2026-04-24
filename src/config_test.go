@@ -30,6 +30,9 @@ func TestMergeConfigDefaultsToIPv4(t *testing.T) {
 	if cfg.CachePath != defaultCachePath {
 		t.Fatalf("unexpected default cache path: %s", cfg.CachePath)
 	}
+	if cfg.EnableCache {
+		t.Fatal("expected cache to default to disabled")
+	}
 }
 
 func TestMergeConfigCLIOverridesFile(t *testing.T) {
@@ -66,6 +69,7 @@ func TestMergeConfigCLIAlwaysTakesPrecedence(t *testing.T) {
 		Host:           "@",
 		GoDaddyBaseURL: "https://config.example.test",
 		CachePath:      "../etc/from-config-cache.json",
+		EnableCache:    false,
 		IPv4URL:        "https://ipv4-config.example.test",
 		IPv6URL:        "https://ipv6-config.example.test",
 		EnableIPv4:     true,
@@ -76,6 +80,7 @@ func TestMergeConfigCLIAlwaysTakesPrecedence(t *testing.T) {
 		Host:       "www",
 		GoDaddyURL: "https://cli.example.test",
 		CachePath:  "/tmp/from-cli-cache.json",
+		EnableCache: true,
 		IPv4URL:    "https://ipv4-cli.example.test",
 		IPv6URL:    "https://ipv6-cli.example.test",
 		IPv6Only:   true,
@@ -95,6 +100,9 @@ func TestMergeConfigCLIAlwaysTakesPrecedence(t *testing.T) {
 	if cfg.CachePath != "/tmp/from-cli-cache.json" {
 		t.Fatalf("expected CLI cache precedence, got %s", cfg.CachePath)
 	}
+	if !cfg.EnableCache {
+		t.Fatal("expected CLI enable-cache precedence")
+	}
 	if cfg.IPv4URL != "https://ipv4-cli.example.test" {
 		t.Fatalf("expected CLI IPv4 URL precedence, got %s", cfg.IPv4URL)
 	}
@@ -106,6 +114,16 @@ func TestMergeConfigCLIAlwaysTakesPrecedence(t *testing.T) {
 	}
 	if !cfg.EnableIPv6 {
 		t.Fatal("expected CLI IPv6-only precedence to enable IPv6")
+	}
+}
+
+func TestParseCLIEnableCache(t *testing.T) {
+	cli, err := parseCLI([]string{"--enable-cache", "true"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !cli.EnableCache {
+		t.Fatal("expected enable-cache to parse as true")
 	}
 }
 
