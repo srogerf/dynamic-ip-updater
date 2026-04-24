@@ -68,7 +68,12 @@ func (c *GoDaddyClient) GetRecord(ctx context.Context, recordType, domain, host 
 }
 
 func (c *GoDaddyClient) SetRecord(ctx context.Context, recordType, domain, host, ip string) error {
-	payload := []dnsRecord{{Data: ip, TTL: 600}}
+	payload := []dnsRecord{{
+		Data: ip,
+		Name: host,
+		TTL:  600,
+		Type: recordType,
+	}}
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("marshal %s record update: %w", recordType, err)

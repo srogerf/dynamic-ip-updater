@@ -51,8 +51,15 @@ func TestGoDaddySetRecord(t *testing.T) {
 				if err != nil {
 					t.Fatalf("read body: %v", err)
 				}
-				if !strings.Contains(string(body), `"data":"203.0.113.99"`) {
+				bodyText := string(body)
+				if !strings.Contains(bodyText, `"data":"203.0.113.99"`) {
 					t.Fatalf("unexpected body: %s", string(body))
+				}
+				if !strings.Contains(bodyText, `"type":"A"`) {
+					t.Fatalf("record type missing from body: %s", bodyText)
+				}
+				if !strings.Contains(bodyText, `"name":"www"`) {
+					t.Fatalf("record name missing from body: %s", bodyText)
 				}
 				return &http.Response{
 					StatusCode: http.StatusOK,
